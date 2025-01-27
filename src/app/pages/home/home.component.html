@@ -8,22 +8,26 @@
         placeholder="Type new todo"
         autofocus
         type="text"
+        (keydown.enter)="addTask($event)"
       />
     </div>
   </header>
   <div class="container todoapp-wrapper">
     <!-- This section should be hidden by default and shown when there are todos -->
-    <section class="main">
-      <ul class="todo-list">
-        <li class="completed">
+    <section class="main" *ngIf="tasks.length > 0"> 
+      <ul class="todo-list" *ngFor="let task of tasks; let i = index">
+        <li class="completed" 
+          [class.completed]="task.completed" 
+          [class.editing]="task.editing"
+          [class.hidden]="(type_task === 'pending' && task.completed) || (type_task === 'completed' && !task.completed)">
           <div class="view">
-            <input class="toggle" type="checkbox" checked />
-            <label>Learn JavaScript</label>
-            <button class="destroy"></button>
+            <input class="toggle" type="checkbox" (click)="changuedTaskCompleted(i)" [checked]="task.completed"/>
+            <label (dblclick)="changuedTaskEditing(i)">{{task.title}}</label>
+            <button class="destroy" (click)="deleteTask(i)"></button>
           </div>
-          <input class="edit" value="Learn JavaScript" />
+          <input class="edit" (keydown.esc)="changuedTaskEditing(i)" (keydown.enter)="saveEditTask($event, i)" value="{{task.title}}" />
         </li>
-        <li>
+        <!--<li>
           <div class="view">
             <input class="toggle" type="checkbox" />
             <label>Buy a unicorn</label>
@@ -38,27 +42,27 @@
             <button class="destroy"></button>
           </div>
           <input class="edit" value="Make dishes" />
-        </li>
+        </li>-->
       </ul>
     </section>
     <!-- This footer should be hidden by default and shown when there are todos -->
-    <footer class="footer">
+    <footer class="footer" *ngIf="tasks.length > 0">
       <!-- This should be `0 items left` by default -->
-      <span class="todo-count"><strong>0</strong> item left</span>
+      <span class="todo-count"><strong>{{countPendningTasks()}}</strong> <span *ngIf="countPendningTasks() === 1; else elseBlock"> item</span><ng-template #elseBlock> items</ng-template>  left</span>
       <!-- Remove this if you don't implement routing -->
       <ul class="filters">
         <li>
-          <a routerLink="/" class="selected">All</a>
+          <a routerLink="/" (click)="setTypeTask('all')" [class.selected]="type_task == 'all'">All</a>
         </li>
         <li>
-          <a routerLink="/pending">Pending</a>
+          <a routerLink="/" (click)="setTypeTask('pending')" [class.selected]="type_task == 'pending'">Pending</a>
         </li>
         <li>
-          <a routerLink="/completed">Completed</a>
+          <a routerLink="/" (click)="setTypeTask('completed')" [class.selected]="type_task == 'completed'" >Completed</a>
         </li>
       </ul>
       <!-- Hidden if no completed items are left ↓ -->
-      <button class="clear-completed">Clear completed</button>
+      <button class="clear-completed" (click)="clearCompleted()">Clear completed</button>
     </footer>
   </div>
 </section>
